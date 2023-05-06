@@ -1,52 +1,57 @@
-var myCapture, // camera
-    myVida;    // VIDA
+let myCapture, myVida;
 
-/*
-  We will set this flag when we grab the background image. We will use it to
-  introduce additional control over the sound (to avoid unnecessary noise the
-  sound will not be heard before the background image is captured).
-*/
-var backgroundCapturedFlag = false;
+let EN_M1_mandolin1, EN_M1_mldy2, EN_M1_mldyB4, EN_M2_mldy3, EN_M2_mldyB1,
+  EN_M2_mldyB5, EN_M2_stinger1, EN_M2_stinger7, EN_M3_mldy1, EN_M3_stinger3,
+  HOLO_B1, LEIS_MUSIC_pipe2, LEOF_SAAV_mldy3;
 
-/*
-  We will use the sound in this example (so remember to add the p5.Sound
-  library to your project if you want to recreate this). This array will be
-  used to store oscillators.
-*/
-var synth = [];
+let sounds = [];
 
-var sounds = [
-  loadSound('mp3/EN_M1_mandolin1.mp3'),
-  loadSound('mp3/EN_M1_mldy2.mp3'),
-  loadSound('mp3/EN_M1_mldyB4.mp3'),
-  loadSound('mp3/EN_M2_mldy3.mp3')
-];
+let canvasWidth = 640, canvasHeight = 480;
 
-let size = {
-  width: 640,
-  height: 480
+/// preload is called before setup to make sure smth is done before the program starts
+function preload() {
+  console.log('[preload] loading samples...');
+
+  EN_M1_mandolin1  = loadSound('mp3/EN_M1_mandolin1.mp3');
+  EN_M1_mldy2      = loadSound('mp3/EN_M1_mldy2.mp3');
+  EN_M1_mldyB4     = loadSound('mp3/EN_M1_mldyB4.mp3');
+  EN_M2_mldy3      = loadSound('mp3/EN_M2_mldy3.mp3');
+  EN_M2_mldyB1     = loadSound('mp3/EN_M2_mldyB1.mp3');
+  EN_M2_mldyB5     = loadSound('mp3/EN_M2_mldyB5.mp3');
+  EN_M2_stinger1   = loadSound('mp3/EN_M2_stinger1.mp3');
+  EN_M2_stinger7   = loadSound('mp3/EN_M2_stinger7.mp3');
+  EN_M3_mldy1      = loadSound('mp3/EN_M3_mldy1.mp3');
+  EN_M3_stinger3   = loadSound('mp3/EN_M3_stinger3.mp3');
+  HOLO_B1          = loadSound('mp3/HOLO_B1.mp3');
+  LEIS_MUSIC_pipe2 = loadSound('mp3/LEIS_MUSIC_pipe2.mp3');
+  LEOF_SAAV_mldy3  = loadSound('mp3/LEOF_SAAV_mldy3.mp3');
+
+  sounds = [
+    EN_M1_mandolin1,
+    EN_M1_mldy2,
+    EN_M1_mldyB4,
+    EN_M2_mldy3,
+    EN_M2_mldyB1
+  ]
+
+  console.log('[preload] samples loaded');
 }
 
-/*
-  Here we are trying to get access to the camera.
-*/
 function initCaptureDevice() {
   try {
     myCapture = createCapture(VIDEO);
-    myCapture.size(size.width, size.height);
+    myCapture.size(canvasWidth, canvasHeight);
     myCapture.elt.setAttribute('playsinline', '');
     myCapture.hide();
-    console.log(
-      '[initCaptureDevice] capture ready. Resolution: ' +
-      myCapture.width + ' ' + myCapture.height
-    );
+
+    console.log(`[initCaptureDevice] capture ready. Resolution: ${myCapture.width}x${myCapture.height}`)
   } catch(_err) {
-    console.log('[initCaptureDevice] capture error: ' + _err);
+    console.log(`[initCaptureDevice] capture error: ${_err}`);
   }
 }
 
 function setup() {
-  createCanvas(size.width, size.height); // we need some space...
+  createCanvas(canvasWidth, canvasHeight); // we need some space...
   initCaptureDevice(); // and access to the camera
 
   /*
@@ -59,7 +64,7 @@ function setup() {
     Turn off the progressive background mode (we will use a static background
     image).
   */
-  myVida.progressiveBackgroundFlag = false;
+  myVida.progressiveBackgroundFlag = true;
   /*
     The value of the threshold for the procedure that calculates the threshold
     image. The value should be in the range from 0.0 to 1.0 (float).
@@ -74,6 +79,8 @@ function setup() {
       [your vida object].MIRROR_BOTH
     The default value is MIRROR_NONE.
   */
+  myVida.imageFilterInvert;
+  
   myVida.mirror = myVida.MIRROR_HORIZONTAL;
   /*
     In order for VIDA to handle active zones (it doesn't by default), we set
@@ -95,11 +102,13 @@ function setup() {
     resolution.
   */
 
-  var padding = 0.07; var n = sounds.length;
-  var zoneWidth = 0.1; var zoneHeight = 0.5;
-  var hOffset = (1.0 - (n * zoneWidth + (n - 1) * padding)) / 2.0;
-  var vOffset = 0.25;
-  for(var i = 0; i < n; i++) {
+  let numberOfActiveZones = sounds.length;
+  let padding = 0.07;
+  let zoneWidth = 0.1, zoneHeight = 0.5;
+  let hOffset = (1.0 - (numberOfActiveZones * zoneWidth + (numberOfActiveZones - 1) * padding)) / 2.0;
+  let vOffset = 0.25;
+  
+  for(let i = 0; i < numberOfActiveZones; i++) {
     /*
       addActiveZone function (which, of course, adds active zones to the VIDA
       object) requires the following parameters:
@@ -114,32 +123,10 @@ function setup() {
       hOffset + i * (zoneWidth + padding), vOffset, zoneWidth, zoneHeight,
       onActiveZoneChange
     );
-    /*
-      For each active zone, we will also create a separate oscillator that we
-      will mute/unmute depending on the state of the zone. We use the standard
-      features of the p5.Sound library here: the following code just creates an
-      oscillator that generates a sinusoidal waveform and places the oscillator
-      in the synth array.
-    */
-    // var osc = new p5.Oscillator();
-    // osc.setType('sine');
-    // /*
-    //   Let's assume that each subsequent oscillator will play 4 halftones higher
-    //   than the previous one (from the musical point of view, it does not make
-    //   much sense, but it will be enough for the purposes of this example). If
-    //   you do not take care of the music and the calculations below seem unclear
-    //   to you, you can ignore this part or access additional information , e.g.
-    //   here: https://en.wikipedia.org/wiki/MIDI_tuning_standard
-    // */
-    // osc.freq(440.0 * Math.pow(2.0, (60 + (i * 4) - 69.0) / 12.0));
-    // osc.amp(0.0); osc.start();
-    // synth[i] = osc;
   }
 
   frameRate(30); // set framerate
 }
-
-let executeOnlyOnce = false;
 
 function draw() {
   if(myCapture !== null && myCapture !== undefined) { // safety first
@@ -150,13 +137,7 @@ function draw() {
       repetition).
     */
     myVida.update(myCapture);
-    // if(myCapture !== null && myCapture !== undefined && !executeOnlyOnce) { // safety first
-    //   let emptyBackground = createImage(size.width, size.height);
-    //   myVida.setBackgroundImage(emptyBackground);
-    //   backgroundCapturedFlag = true;
-    //   executeOnlyOnce = true
-    //   console.log('background set');
-    // }
+
     /*
       Now we can display images: source video (mirrored) and subsequent stages
       of image transformations made by VIDA.
@@ -164,18 +145,10 @@ function draw() {
     // image(myVida.currentImage, 0, 0);
     // image(myVida.backgroundImage, 320, 0);
     // image(myVida.differenceImage, 0, 240);
-    
-    
-    // image(myVida.backgroundImage, 0, 0);
     image(myVida.thresholdImage, 0, 0)
-
-
-    // let's also describe the displayed images
-    noStroke(); fill(255, 255, 255);
-    // text('camera', 20, 20);
-    // text('vida: static background image', 340, 20);
-    // text('vida: difference image', 20, 260);
-    // text('vida: threshold image', size.width, size.height);
+    noStroke(); 
+    fill(255, 255, 255);
+    
     /*
       In this example, we use the built-in VIDA function for drawing zones. We
       use the version of the function with two parameters (given in pixels)
@@ -187,7 +160,7 @@ function draw() {
       surface, use the function in this way:
         [your vida object].drawActiveZones(0, 0, width, height);
     */
-    myVida.drawActiveZones(0, 0, size.width, size.height);
+    myVida.drawActiveZones(0, 0, canvasWidth, canvasHeight);
   }
   else {
     /*
@@ -239,18 +212,11 @@ function onActiveZoneChange(_vidaActiveZone) {
     describing the current zone will be passed to the function as a parameter.
   */
   // print zone id and status to console...
-  console.log(
-    'zone: ' + _vidaActiveZone.id + // 0, 1, 2, 3, 4, 5, 6...
-    ' status: ' + _vidaActiveZone.isMovementDetectedFlag
-  );
-  // ... or do something else, e.g., use this information to control the sound:
-  // synth[_vidaActiveZone.id].amp(
-  //   0.1 * _vidaActiveZone.isMovementDetectedFlag * backgroundCapturedFlag
-  // );
+  console.log(`zone: ${_vidaActiveZone.id} status: ${_vidaActiveZone.isMovementDetectedFlag}`);
   playSample(sounds[_vidaActiveZone.id])
 }
 
-function playSample(_sample) { // to start palying mp3 file, instead of _sample we need to out the name of the file like var
+function playSample(_sample) {
   if(_sample === null) {console.log('[playSample] _sample === null'); return;}
   if(_sample === undefined) {console.log('[playSample] _sample === undefined'); return;}
   if(!_sample.isPlaying()) _sample.play();
@@ -260,7 +226,7 @@ function playSample(_sample) { // to start palying mp3 file, instead of _sample 
   Capture current video frame and put it into the VIDA's background buffer.
 */
 function touchEnded() {
-  if(myCapture !== null && myCapture !== undefined) { // safety first
+  if(myCapture !== null && myCapture !== undefined) {
     myVida.setBackgroundImage(myCapture);
     console.log('background set');
     backgroundCapturedFlag = true;
