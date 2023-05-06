@@ -1,7 +1,6 @@
 let myCapture, myVida;
 
-let EN_M1_mandolin1, EN_M1_mldy2, EN_M1_mldyB4, EN_M2_mldy3, EN_M2_mldyB1,
-  EN_M2_mldyB5, EN_M2_stinger1, EN_M2_stinger7, EN_M3_mldy1, EN_M3_stinger3,
+let Memorylayers, EN_M3_mldy1, EN_M3_stinger3,
   HOLO_B1, LEIS_MUSIC_pipe2, LEOF_SAAV_mldy3;
 
 let sounds = [];
@@ -12,26 +11,20 @@ let canvasWidth = 640, canvasHeight = 480;
 function preload() {
   console.log('[preload] loading samples...');
 
-  EN_M1_mandolin1  = loadSound('mp3/EN_M1_mandolin1.mp3');
-  EN_M1_mldy2      = loadSound('mp3/EN_M1_mldy2.mp3');
-  EN_M1_mldyB4     = loadSound('mp3/EN_M1_mldyB4.mp3');
-  EN_M2_mldy3      = loadSound('mp3/EN_M2_mldy3.mp3');
-  EN_M2_mldyB1     = loadSound('mp3/EN_M2_mldyB1.mp3');
-  EN_M2_mldyB5     = loadSound('mp3/EN_M2_mldyB5.mp3');
-  EN_M2_stinger1   = loadSound('mp3/EN_M2_stinger1.mp3');
-  EN_M2_stinger7   = loadSound('mp3/EN_M2_stinger7.mp3');
+  memorylayers     = loadSound('mp3/memorylayers.mp3');
   EN_M3_mldy1      = loadSound('mp3/EN_M3_mldy1.mp3');
   EN_M3_stinger3   = loadSound('mp3/EN_M3_stinger3.mp3');
   HOLO_B1          = loadSound('mp3/HOLO_B1.mp3');
   LEIS_MUSIC_pipe2 = loadSound('mp3/LEIS_MUSIC_pipe2.mp3');
   LEOF_SAAV_mldy3  = loadSound('mp3/LEOF_SAAV_mldy3.mp3');
 
-  sounds = [
-    EN_M1_mandolin1,
-    EN_M1_mldy2,
-    EN_M1_mldyB4,
-    EN_M2_mldy3,
-    EN_M2_mldyB1
+    sounds = [
+    memorylayers,
+    EN_M3_mldy1,
+    EN_M3_stinger3,
+       HOLO_B1, 
+    LEIS_MUSIC_pipe2,
+    LEOF_SAAV_mldy3
   ]
 
   console.log('[preload] samples loaded');
